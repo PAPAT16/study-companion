@@ -2,7 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize the Gemini AI with safety settings
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyCSrEI1sTP687fUWYhy6ri_6OKuCagAIEI');
+const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY || 'AIzaSyCSrEI1sTP687fUWYhy6ri_6OKuCagAIEI');
 
 export const generateFlashcards = async (text) => {
   try {
@@ -46,7 +46,7 @@ export const generateFlashcards = async (text) => {
     const flashcardsWithImages = await Promise.all(
       flashcardsData.map(async (flashcard, index) => {
         try {
-          if (!import.meta.env.VITE_UNSPLASH_ACCESS_KEY) {
+          if (!process.env.REACT_APP_UNSPLASH_ACCESS_KEY) {
             return {
               id: Date.now() + index,
               question: flashcard.front,
@@ -56,7 +56,7 @@ export const generateFlashcards = async (text) => {
           }
 
           const imageResponse = await fetch(
-            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(flashcard.imageSearchTerm)}&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}&per_page=1`
+            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(flashcard.imageSearchTerm)}&client_id=${process.env.REACT_APP_UNSPLASH_ACCESS_KEY}&per_page=1`
           );
           
           if (!imageResponse.ok) {
