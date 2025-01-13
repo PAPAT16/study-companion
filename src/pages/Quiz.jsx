@@ -13,7 +13,6 @@ const difficultyOptions = {
 
 export default function Quiz() {
   const { userRecords, saveRecords } = useUser();
-  const [flashcards] = useState(userRecords.flashcards || []);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -25,14 +24,16 @@ export default function Quiz() {
   const [numQuestions, setNumQuestions] = useState(5);
 
   const handleStartQuiz = async () => {
-    if (flashcards.length < 3) {
+    const currentFlashcards = userRecords.flashcards || [];
+    if (currentFlashcards.length < 3) {
       toast.error('You need at least 3 flashcards to generate a quiz');
       return;
     }
 
     setLoading(true);
     try {
-      const generatedQuestions = await generateQuiz(flashcards, difficulty, numQuestions);
+      const generatedQuestions = await generateQuiz(currentFlashcards, difficulty, numQuestions);
+      console.log('Generated Questions:', generatedQuestions); // Debug log
       setQuestions(generatedQuestions);
       setQuizStarted(true);
       setCurrentQuestionIndex(0);
@@ -67,6 +68,24 @@ export default function Quiz() {
 
   const handleQuizComplete = () => {
     setQuizCompleted(true);
+    
+    // Save quiz record
+    const quizRecord = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      score,
+      totalQuestions: questions.length,
+      difficulty,
+      timeCompleted: new Date().toISOString()
+    };
+
+    const updatedRecords = {
+      ...userRecords,
+      quizzes: [...(userRecords.quizzes || []), quizRecord]
+    };
+
+    saveRecords(updatedRecords);
+    toast.success('Quiz completed! Results saved to your profile.');
   };
 
   const resetQuiz = () => {
@@ -227,7 +246,7 @@ export default function Quiz() {
                 <div className="bg-dark-700/50 backdrop-blur-sm rounded-2xl p-8 mb-6 border border-white/5">
                   <p className="text-xl text-white mb-8">{currentQuestion.question}</p>
                   <div className="space-y-4">
-                    {currentQuestion.options.map((option, index) => {
+                    {currentQuestion.answers.map((option, index) => {
                       let buttonClass = 'w-full text-left p-6 rounded-xl border-2 transition-all duration-300 ';
                       if (selectedAnswer === null) {
                         buttonClass += 'border-gray-700 hover:border-emerald-500/50 bg-dark-800/50 text-white hover:bg-dark-800';

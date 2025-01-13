@@ -143,43 +143,70 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Stats Section */}
+          {/* Stats Grid */}
           <div className="border-t border-dark-700">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-white mb-4 font-inter">Statistics</h3>
-              <dl className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                {stats.map((stat) => (
-                  <div
-                    key={stat.name}
-                    className="relative overflow-hidden rounded-lg bg-dark-700 p-5"
-                  >
-                    <dt>
-                      <div className="absolute rounded-md bg-indigo-500 p-3">
-                        <stat.icon className="h-6 w-6 text-white" aria-hidden="true" />
-                      </div>
-                      <p className="ml-16 truncate text-sm font-medium text-gray-400">
-                        {stat.name}
-                      </p>
-                    </dt>
-                    <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                      <p className="text-2xl font-semibold text-white">{stat.value}</p>
-                    </dd>
-                  </div>
-                ))}
-                <div className="relative overflow-hidden rounded-lg bg-dark-700 p-5 sm:col-span-3">
-                  <dt>
-                    <div className="absolute rounded-md bg-indigo-500 p-3">
-                      <AcademicCapIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                    </div>
-                    <p className="ml-16 truncate text-sm font-medium text-gray-400">
-                      Average Quiz Score
-                    </p>
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-3 p-4">
+              {stats.map((stat) => (
+                <div key={stat.name} className="bg-dark-700/50 px-4 py-5 rounded-lg shadow">
+                  <dt className="text-base font-normal text-gray-400 flex items-center gap-2">
+                    <stat.icon className="h-5 w-5" />
+                    {stat.name}
                   </dt>
-                  <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                    <p className="text-2xl font-semibold text-white">{calculateAverageScore()}%</p>
-                  </dd>
+                  <dd className="mt-1 text-2xl font-semibold text-white">{stat.value}</dd>
                 </div>
-              </dl>
+              ))}
+              <div className="bg-dark-700/50 px-4 py-5 rounded-lg shadow">
+                <dt className="text-base font-normal text-gray-400">Average Score</dt>
+                <dd className="mt-1 text-2xl font-semibold text-white">{calculateAverageScore()}%</dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* Quiz History */}
+          <div className="border-t border-dark-700 px-4 py-5">
+            <h4 className="text-lg font-medium text-white mb-4">Quiz History</h4>
+            <div className="space-y-4">
+              {userRecords.quizzes && userRecords.quizzes.length > 0 ? (
+                [...userRecords.quizzes]
+                  .sort((a, b) => new Date(b.timeCompleted) - new Date(a.timeCompleted))
+                  .map((quiz) => (
+                    <div key={quiz.id} className="bg-dark-700/50 rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-400">
+                            {new Date(quiz.timeCompleted).toLocaleDateString()} at {new Date(quiz.timeCompleted).toLocaleTimeString()}
+                          </span>
+                          <span className="px-2 py-1 text-xs rounded-full capitalize" 
+                                style={{
+                                  backgroundColor: quiz.difficulty === 'easy' ? 'rgba(34, 197, 94, 0.1)' : 
+                                                 quiz.difficulty === 'medium' ? 'rgba(234, 179, 8, 0.1)' : 
+                                                 'rgba(239, 68, 68, 0.1)',
+                                  color: quiz.difficulty === 'easy' ? 'rgb(34, 197, 94)' : 
+                                        quiz.difficulty === 'medium' ? 'rgb(234, 179, 8)' : 
+                                        'rgb(239, 68, 68)'
+                                }}>
+                            {quiz.difficulty}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-300">
+                          Score: {quiz.score} out of {quiz.totalQuestions}
+                        </div>
+                      </div>
+                      <div className="text-2xl font-semibold" style={{
+                        color: (quiz.score / quiz.totalQuestions) >= 0.8 ? 'rgb(34, 197, 94)' :
+                               (quiz.score / quiz.totalQuestions) >= 0.6 ? 'rgb(234, 179, 8)' :
+                               'rgb(239, 68, 68)'
+                      }}>
+                        {Math.round((quiz.score / quiz.totalQuestions) * 100)}%
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <AcademicCapIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No quiz history yet. Start taking quizzes to see your progress!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
