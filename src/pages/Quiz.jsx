@@ -12,7 +12,7 @@ const difficultyOptions = {
 };
 
 export default function Quiz() {
-  const { userRecords, saveRecords } = useUser();
+  const { userRecords, updateQuizStats } = useUser();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -33,7 +33,6 @@ export default function Quiz() {
     setLoading(true);
     try {
       const generatedQuestions = await generateQuiz(currentFlashcards, difficulty, numQuestions);
-      console.log('Generated Questions:', generatedQuestions); // Debug log
       setQuestions(generatedQuestions);
       setQuizStarted(true);
       setCurrentQuestionIndex(0);
@@ -69,22 +68,21 @@ export default function Quiz() {
   const handleQuizComplete = () => {
     setQuizCompleted(true);
     
-    // Save quiz record
+    // Calculate percentage score
+    const percentageScore = Math.round((score / questions.length) * 100);
+    
+    // Create quiz record
     const quizRecord = {
       id: Date.now(),
       date: new Date().toISOString(),
-      score,
+      score: percentageScore,
       totalQuestions: questions.length,
       difficulty,
       timeCompleted: new Date().toISOString()
     };
 
-    const updatedRecords = {
-      ...userRecords,
-      quizzes: [...(userRecords.quizzes || []), quizRecord]
-    };
-
-    saveRecords(updatedRecords);
+    // Update quiz stats in UserContext
+    updateQuizStats(quizRecord);
     toast.success('Quiz completed! Results saved to your profile.');
   };
 
@@ -96,10 +94,6 @@ export default function Quiz() {
     setQuizCompleted(false);
     setQuizStarted(false);
   };
-
-  useEffect(() => {
-    // Update quiz history when user records change
-  }, []);
 
   if (loading) {
     return (

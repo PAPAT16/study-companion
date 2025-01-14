@@ -165,40 +165,24 @@ export const generateTopicExplanation = async (subject, topic) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
-    const prompt = `As an engaging teacher, provide a comprehensive explanation of ${topic} in the context of ${subject}. 
-    Format your response with the following sections, using emojis and clear structure:
-
-    📚 Overview
-    Start with a brief, engaging introduction to the topic.
-
-    💡 Key Concepts
-    - List and explain the main concepts
-    - Include important definitions
-    - Highlight fundamental principles
-    Use relevant emojis for each point (e.g., 🔍 for definitions, ⭐ for key points)
-
-    🌟 Real-World Applications
-    - Provide practical examples
-    - Show how the concept is used in daily life
-    - Include relevant industry applications
-    Use descriptive emojis that match each example
-
-    ❗ Common Misconceptions & Tips
-    - Address typical misunderstandings
-    - Highlight important points to remember
-    - Provide tips for better understanding
-    Use warning ⚠️ for misconceptions and 💪 for tips
-
-    Make the explanation engaging and easy to understand for students. Use clear language and structure the response with proper spacing between sections.`;
+    const prompt = `Explain the topic "${topic}" in the subject "${subject}" in a comprehensive yet engaging way.
+    
+    Please structure your response with:
+    1. A clear introduction
+    2. Key concepts and definitions
+    3. Real-world examples or applications
+    4. Important relationships or connections
+    5. A brief summary
+    
+    Make the explanation accessible but thorough, using appropriate terminology and clear explanations.
+    Feel free to use markdown formatting for better readability.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const content = response.text();
-    
-    return content;
+    return response.text();
   } catch (error) {
-    console.error('Error generating topic explanation:', error);
-    throw error;
+    console.error('Error in generateTopicExplanation:', error);
+    throw new Error('Failed to generate explanation. Please try again.');
   }
 };
 

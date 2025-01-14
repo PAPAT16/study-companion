@@ -251,139 +251,96 @@ export default function Flashcards() {
             {/* Main Content Area */}
             <div className="lg:col-span-9">
               {showExplanation ? (
-                <div className="bg-dark-800/50 backdrop-blur-xl rounded-2xl p-6 shadow-lg">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-                      <AcademicCapIcon className="h-6 w-6 mr-2 text-indigo-600" />
-                      Study Assistant
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label htmlFor="subject" className="block text-sm font-medium text-white mb-1">
-                          Subject
-                        </label>
-                        <input
-                          type="text"
-                          id="subject"
-                          value={subject}
-                          onChange={(e) => setSubject(e.target.value)}
-                          className="w-full rounded-md border-gray-300 bg-dark-700 text-white px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                          placeholder="e.g., Mathematics, Physics, History"
-                        />
+                <div className="mt-8">
+                  <div className="glass-effect gradient-bg p-6 rounded-2xl">
+                    <div className="flex flex-col space-y-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1 relative">
+                          <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-indigo-400" />
+                          <input
+                            type="text"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            placeholder="Enter subject (e.g., Biology)"
+                            className="w-full pl-10 pr-4 py-2 rounded-xl bg-dark-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div className="flex-1 relative">
+                          <AcademicCapIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-indigo-400" />
+                          <input
+                            type="text"
+                            value={topic}
+                            onChange={(e) => setTopic(e.target.value)}
+                            placeholder="Enter topic (e.g., Photosynthesis)"
+                            className="w-full pl-10 pr-4 py-2 rounded-xl bg-dark-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <button
+                          onClick={handleGetExplanation}
+                          disabled={isExplaining}
+                          className="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap hover:scale-105 transform transition-all duration-200"
+                        >
+                          {isExplaining ? (
+                            <div className="flex items-center">
+                              <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
+                              Generating...
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <SparklesIcon className="w-5 h-5 mr-2" />
+                              Explain
+                            </div>
+                          )}
+                        </button>
                       </div>
-                      <div>
-                        <label htmlFor="topic" className="block text-sm font-medium text-white mb-1">
-                          Topic
-                        </label>
-                        <input
-                          type="text"
-                          id="topic"
-                          value={topic}
-                          onChange={(e) => setTopic(e.target.value)}
-                          className="w-full rounded-md border-gray-300 bg-dark-700 text-white px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                          placeholder="e.g., Quadratic Equations, Newton's Laws"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex space-x-4">
-                      <button
-                        onClick={handleGetExplanation}
-                        disabled={isExplaining}
-                        className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                      >
-                        {isExplaining ? (
-                          <>
-                            <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
-                            Generating Explanation...
-                          </>
-                        ) : (
-                          <>
-                            <SparklesIcon className="h-5 w-5 mr-2" />
-                            Get Explanation
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={startCamera}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                      >
-                        <CameraIcon className="h-5 w-5 mr-2" />
-                        Scan Question
-                      </button>
+                      
+                      {explanation && (
+                        <div className="mt-6 prose prose-invert max-w-none animate-fadeIn">
+                          {explanation.split('\n').map((line, index) => {
+                            // Check for headers (# or ##)
+                            if (line.startsWith('# ')) {
+                              return (
+                                <h2 key={index} className="text-2xl font-bold text-indigo-400 mb-4 flex items-center gap-2 animate-slideInRight" style={{ animationDelay: `${index * 100}ms` }}>
+                                  <SparklesIcon className="h-6 w-6" />
+                                  {line.replace('# ', '')}
+                                </h2>
+                              );
+                            }
+                            if (line.startsWith('## ')) {
+                              return (
+                                <h3 key={index} className="text-xl font-semibold text-indigo-300 mt-6 mb-3 flex items-center gap-2 animate-slideInRight" style={{ animationDelay: `${index * 100}ms` }}>
+                                  <AcademicCapIcon className="h-5 w-5" />
+                                  {line.replace('## ', '')}
+                                </h3>
+                              );
+                            }
+                            // Check for bullet points
+                            if (line.startsWith('- ')) {
+                              return (
+                                <div key={index} className="flex items-start space-x-3 my-2 animate-slideInRight" style={{ animationDelay: `${index * 100}ms` }}>
+                                  <div className="mt-2">
+                                    <div className="h-2 w-2 rounded-full bg-indigo-400"></div>
+                                  </div>
+                                  <p className="text-gray-200">
+                                    {line.replace('- ', '')}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            // Regular paragraph
+                            if (line.trim()) {
+                              return (
+                                <p key={index} className="text-gray-200 my-3 leading-relaxed animate-slideInRight" style={{ animationDelay: `${index * 100}ms` }}>
+                                  {line}
+                                </p>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {explanation && (
-                    <div className="mt-6">
-                      <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 animate-fadeIn hover:shadow-xl transition-all duration-300">
-                        {/* Explanation content */}
-                        {explanation.split('\n').map((paragraph, index) => {
-                          if (/^[📚💡🌟❗]/.test(paragraph.trim())) {
-                            return (
-                              <h4 key={index} className="text-xl font-semibold text-indigo-600 mt-6 mb-3 flex items-center animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                <span className="mr-2 animate-wiggle">{paragraph.charAt(0)}</span>
-                                {paragraph.substring(1)}
-                              </h4>
-                            );
-                          }
-                          else if (/^[🔍⭐💪⚠️📝]/.test(paragraph.trim())) {
-                            return (
-                              <div key={index} className="flex items-start space-x-3 my-2 animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                <span className="animate-wiggle">{paragraph.charAt(0)}</span>
-                                <p className="text-gray-700 leading-relaxed">
-                                  {paragraph.substring(1).trim()}
-                                </p>
-                              </div>
-                            );
-                          }
-                          else if (paragraph.trim()) {
-                            return (
-                              <p key={index} className="text-gray-700 leading-relaxed my-3 animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                {paragraph}
-                              </p>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {imageAnalysis && (
-                    <div className="mt-6">
-                      <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 animate-fadeIn hover:shadow-xl transition-all duration-300">
-                        {/* Image analysis content */}
-                        {imageAnalysis.split('\n').map((paragraph, index) => {
-                          if (/^[📚💡🌟❗]/.test(paragraph.trim())) {
-                            return (
-                              <h4 key={index} className="text-xl font-semibold text-indigo-600 mt-6 mb-3 flex items-center animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                <span className="mr-2 animate-wiggle">{paragraph.charAt(0)}</span>
-                                {paragraph.substring(1)}
-                              </h4>
-                            );
-                          }
-                          if (/^[🔍⭐💪⚠️📝]/.test(paragraph.trim())) {
-                            return (
-                              <div key={index} className="flex items-start space-x-3 my-2 animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                <span className="animate-wiggle">{paragraph.charAt(0)}</span>
-                                <p className="text-gray-700 leading-relaxed">
-                                  {paragraph.substring(1).trim()}
-                                </p>
-                              </div>
-                            );
-                          }
-                          if (paragraph.trim()) {
-                            return (
-                              <p key={index} className="text-gray-700 leading-relaxed my-3 animate-slideIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                {paragraph}
-                              </p>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -498,68 +455,59 @@ export default function Flashcards() {
                         </button>
                       </div>
 
-                      <div 
-                        onClick={handleFlip}
-                        className={`flip-card relative w-full h-[350px] ${isFlipped ? 'flipped' : ''}`}
-                      >
-                        <div className="flip-card-inner">
-                          <div className="flip-card-front glass-effect gradient-bg glow-effect shine-effect rounded-2xl">
-                            <div className="card-content">
-                              {cards[currentIndex].imageUrl ? (
-                                <div className="card-image-container mb-4">
+                      {/* Flashcard container */}
+                      <div className="w-full h-[350px] perspective-1000">
+                        {/* Card */}
+                        <div
+                          onClick={() => !isGenerating && setIsFlipped(!isFlipped)}
+                          className={`flip-card cursor-pointer ${isFlipped ? 'flipped' : ''}`}
+                        >
+                          {/* Front of card */}
+                          <div className="flip-card-front glass-effect gradient-bg glow-effect rounded-2xl">
+                            <div className="flex flex-col h-full p-6">
+                              {cards[currentIndex]?.imageUrl && (
+                                <div className="card-image-container">
                                   <img
                                     src={cards[currentIndex].imageUrl}
-                                    alt={cards[currentIndex].question}
+                                    alt="Flashcard illustration"
                                     className="card-image"
                                   />
-                                  <div className="card-image-overlay" />
-                                </div>
-                              ) : (
-                                <div className="card-image-container glass-effect flex items-center justify-center mb-4">
-                                  <BookOpenIcon className="h-12 w-12 text-white/70" />
                                 </div>
                               )}
-                              
-                              <div className="flex-grow flex flex-col justify-between">
-                                <div>
-                                  <h3 className="text-xl font-semibold text-white/90 mb-3 font-inter">Question</h3>
-                                  <p className="text-white/80 text-lg leading-relaxed font-inter">{cards[currentIndex].question}</p>
-                                </div>
-                                <div className="flex items-center justify-between text-sm text-white/60 mt-4">
-                                  <span className="font-inter tracking-wide">TAP TO REVEAL</span>
-                                  <ArrowPathIcon className="h-5 w-5 animate-pulse" />
-                                </div>
+                              <div className="flex-1 flex flex-col justify-center">
+                                <h3 className="text-xl font-semibold mb-4">
+                                  {cards[currentIndex]?.question || 'Create your first flashcard!'}
+                                </h3>
+                                {!cards[currentIndex]?.question && (
+                                  <p className="text-gray-400">
+                                    Click the + button below to get started
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
-
-                          <div className="flip-card-back glass-effect gradient-bg glow-effect shine-effect rounded-2xl">
-                            <div className="card-content">
-                              <div className="flex-grow flex flex-col justify-between">
-                                <div>
-                                  <h3 className="text-xl font-semibold text-white/90 mb-3 font-inter">Answer</h3>
-                                  <p className="text-white/80 text-lg leading-relaxed font-inter">{cards[currentIndex].answer}</p>
-                                </div>
-                                <div className="flex items-center justify-between text-sm text-white/60 mt-4">
-                                  <span className="font-inter tracking-wide">TAP TO FLIP</span>
-                                  <ArrowPathIcon className="h-5 w-5 animate-pulse" />
-                                </div>
-                              </div>
+                          
+                          {/* Back of card */}
+                          <div className="flip-card-back glass-effect gradient-bg glow-effect rounded-2xl">
+                            <div className="flex flex-col h-full justify-center p-6">
+                              <p className="text-lg">
+                                {cards[currentIndex]?.answer || 'Answer will appear here'}
+                              </p>
                             </div>
                           </div>
                         </div>
-
-                        {/* Delete button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCard(cards[currentIndex].id);
-                          }}
-                          className="absolute top-3 right-3 z-10 p-2 rounded-full glass-effect hover:bg-white/10 text-white/70 hover:text-white/90 transition-all duration-300"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
                       </div>
+
+                      {/* Delete button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCard(cards[currentIndex].id);
+                        }}
+                        className="absolute top-3 right-3 z-10 p-2 rounded-full glass-effect hover:bg-white/10 text-white/70 hover:text-white/90 transition-all duration-300"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   )}
 

@@ -7,109 +7,98 @@ export function UserProvider({ children }) {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  const [userRecords, setUserRecords] = useState({
-    flashcards: [],
-    quizzes: [],
-    notes: []
+
+  const [userRecords, setUserRecords] = useState(() => {
+    if (!user?.email) return { flashcards: [], quizzes: [], notes: [], quizStats: { completed: 0, averageScore: 0 } };
+    try {
+      const storageKey = `user_records_${user.email}`;
+      const savedRecords = localStorage.getItem(storageKey);
+      const parsedRecords = savedRecords ? JSON.parse(savedRecords) : null;
+      return parsedRecords || {
+        flashcards: [],
+        quizzes: [],
+        notes: [],
+        quizStats: { completed: 0, averageScore: 0 }
+      };
+    } catch (error) {
+      console.error('Error loading initial user records:', error);
+      return {
+        flashcards: [],
+        quizzes: [],
+        notes: [],
+        quizStats: { completed: 0, averageScore: 0 }
+      };
+    }
   });
 
-  // Get user-specific storage key
-  const getUserStorageKey = (email) => {
-    return `user_records_${email}`;
+  // Update quiz statistics
+  const updateQuizStats = (score) => {
+    setUserRecords(prev => {
+      const oldStats = prev.quizStats || { completed: 0, averageScore: 0 };
+      const newCompleted = oldStats.completed + 1;
+      const newAverage = ((oldStats.averageScore * oldStats.completed) + score) / newCompleted;
+      
+      return {
+        ...prev,
+        quizStats: {
+          completed: newCompleted,
+          averageScore: Math.round(newAverage * 100) / 100
+        }
+      };
+    });
   };
 
-  // Load user records from localStorage
-  const loadUserRecords = (email) => {
-    try {
-      const storageKey = getUserStorageKey(email);
-      const savedRecords = localStorage.getItem(storageKey);
-      if (savedRecords) {
-        setUserRecords(JSON.parse(savedRecords));
-      } else {
-        // Initialize empty records for new user
-        setUserRecords({
-          flashcards: [],
-          quizzes: [],
-          notes: []
-        });
-      }
-    } catch (error) {
-      console.error('Error loading user records:', error);
-    }
-  };
-
-  // Save user records to localStorage
-  const saveUserRecords = () => {
+  // Save user records whenever they change
+  useEffect(() => {
     if (user?.email) {
       try {
-        const storageKey = getUserStorageKey(user.email);
+        const storageKey = `user_records_${user.email}`;
         localStorage.setItem(storageKey, JSON.stringify(userRecords));
       } catch (error) {
         console.error('Error saving user records:', error);
       }
     }
-  };
+  }, [userRecords, user?.email]);
 
-  // Save specific record type (flashcards, quizzes, notes)
-  const saveRecords = (recordType, records) => {
-    setUserRecords(prev => ({
-      ...prev,
-      [recordType]: records
-    }));
-  };
+  // Save user data whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
 
-  // Clear user records from localStorage on logout
-  const clearUserRecords = (email) => {
-    const storageKey = getUserStorageKey(email);
-    localStorage.removeItem(storageKey);
-    setUserRecords({
-      flashcards: [],
-      quizzes: [],
-      notes: []
+  const saveRecords = (type, data) => {
+    setUserRecords(prev => {
+      const newRecords = { ...prev, [type]: data };
+      return newRecords;
     });
   };
 
-  // Handle user login
   const login = (userData) => {
     setUser(userData);
-    loadUserRecords(userData.email);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // Handle user logout
   const logout = () => {
-    if (user?.email) {
-      saveUserRecords(); // Save current user's records before logging out
-      clearUserRecords(user.email);
-    }
     setUser(null);
-    localStorage.removeItem('user');
-  };
-
-  // Save records when they change
-  useEffect(() => {
-    if (user?.email) {
-      saveUserRecords();
-    }
-  }, [userRecords]);
-
-  // Load user records on mount or when user changes
-  useEffect(() => {
-    if (user?.email) {
-      loadUserRecords(user.email);
-    }
-  }, [user?.email]);
-
-  const value = {
-    user,
-    userRecords,
-    login,
-    logout,
-    saveRecords
+    setUserRecords({
+      flashcards: [],
+      quizzes: [],
+      notes: [],
+      quizStats: { completed: 0, averageScore: 0 }
+    });
   };
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider value={{
+      user,
+      userRecords,
+      login,
+      logout,
+      saveRecords,
+      updateQuizStats
+    }}>
       {children}
     </UserContext.Provider>
   );
